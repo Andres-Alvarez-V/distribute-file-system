@@ -1,7 +1,7 @@
 const filesController = require("../controllers/filesController");
 const filesRouter = require("express").Router();
 
-filesRouter.get("/:fileIdentifier", (request, response) => {
+filesRouter.get("/file", (request, response) => {
   filesController.getFiles(request, response);
 });
 

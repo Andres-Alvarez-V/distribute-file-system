@@ -6,16 +6,18 @@ const NAME_NODE_URL = process.env.NAME_NODE_URL;
 
 async function getFiles(fileIdentifier) {
   try {
-    const response = await axios.get(`${NAME_NODE_URL}${fileIdentifier}`);
+    const response = await axios.get(
+      `${NAME_NODE_URL}file?fileIdentifier=${fileIdentifier}`,
+    );
     return response.data;
   } catch (error) {
     throw new Error("Error getting data from NameNode");
   }
 }
 
-async function postFiles(fileSize) {
+async function postFiles(fileMbSize) {
   try {
-    const response = await axios.post(`${NAME_NODE_URL}write`, { fileSize });
+    const response = await axios.post(`${NAME_NODE_URL}write`, { fileMbSize });
     return response.data;
   } catch (error) {
     throw new Error("Error posting data to NameNode");

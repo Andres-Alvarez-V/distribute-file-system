@@ -1,10 +1,10 @@
 const nameNodeService = require("../services/nameNodeService");
 const fileExists = require("../utils/fileExists");
-const getFileSize = require("../utils/getFileSize");
+const getFileMbSize = require("../utils/getFileMbSize");
 
 async function getFiles(request, response) {
   try {
-    const fileIdentifier = request.params.fileIdentifier;
+    const fileIdentifier = request.query.fileIdentifier;
     const blocksInfo = await nameNodeService.getFiles(fileIdentifier);
     // Add here dataNodes connection*
     response.json(blocksInfo);
@@ -22,8 +22,8 @@ async function postFiles(request, response) {
       response.status(400).json({ error: "File does not exist" });
       return;
     }
-    const fileSize = getFileSize(filePath);
-    const blocksInfo = await nameNodeService.postFiles(fileSize);
+    const fileMbSize = getFileMbSize(filePath);
+    const blocksInfo = await nameNodeService.postFiles(fileMbSize);
     // Add here dataNodes connection*
     response.json(blocksInfo);
   } catch (error) {

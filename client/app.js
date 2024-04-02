@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(middleware.requestLogger);
 
 // Routes
-app.use("/api/files", filesRouter);
+app.use("/", filesRouter);
 
 // Error handling
 app.use(middleware.unknownEndpoint);
