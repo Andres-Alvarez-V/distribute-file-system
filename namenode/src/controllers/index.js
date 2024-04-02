@@ -21,9 +21,9 @@ const saveDatanodeInFileMetadata = (fileIdentifier, datanodeIP) => {
 	saveDatanode(fileIdentifier, datanodeIP);
 };
 
-const createAndSaveFileBlock = (fileIdentifier, datanodeIP, turno) => {
-	const blockIdentifier = `${fileIdentifier}-${turno}`;
-	saveBlock(fileIdentifier, datanodeIP, blockIdentifier, turno);
+const createAndSaveFileBlock = (fileIdentifier, datanodeIP, turn) => {
+	const blockIdentifier = `${fileIdentifier}-${turn}`;
+	saveBlock(fileIdentifier, datanodeIP, blockIdentifier, turn);
 };
 
 const createAndSaveFileMapper = (fileSize) => {

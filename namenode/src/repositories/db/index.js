@@ -9,14 +9,14 @@ const datanodesIP = ['1','2','3'];
       {
         datanodesIP: 'XXX.XXX.XXX.XXX',
         blocks: [
-          { blockIdentifier: 'zz-1', turno: 1 },
-          { blockIdentifier: 'zz-2', turno: 2 }
+          { blockIdentifier: 'zz-1', turn: 1 },
+          { blockIdentifier: 'zz-2', turn: 2 }
         ]
       },
       {
         datanodesIP: 'XXX.XXX.XXX.XXX',
         blocks: [
-          { blockIdentifier: 'zz-1', turno: 3 },
+          { blockIdentifier: 'zz-1', turn: 3 },
         ]
       },
       .....
@@ -38,11 +38,10 @@ const saveDatanode = (fileIdentifier, datanodeIP) => {
   file.datanodes.set(datanodeIP, { datanodeIP: datanodeIP, blocks: [] })
 }
 
-const saveBlock = (fileIdentifier, datanodeIP, blockIdentifier, turno) => {
-  console.log(fileIdentifier, datanodeIP, blockIdentifier, turno)
+const saveBlock = (fileIdentifier, datanodeIP, blockIdentifier, turn) => {
   const file = fileMetadata.get(fileIdentifier)
   const datanode = file.datanodes.get(datanodeIP)
-  datanode.blocks.push({ blockIdentifier, turno })
+  datanode.blocks.push({ blockIdentifier, turn })
 }
 
 const getDatanodesIp = () => {
@@ -66,18 +65,17 @@ function getFileMetadata(fileIdentifier) {
 
   const datanodes = fileInfo.datanodes;
 
-  const jsonData = {};
-  jsonData.fileIdentifier = {
+  const jsonData = {
       id: fileIdentifier,
       datanodes: [],
   };
 
   for (const [datanodeIP, datanodeInfo] of datanodes.entries()) {
-      jsonData.fileIdentifier.datanodes.push({
+      jsonData.datanodes.push({
           datanodeIP,
           blocks: datanodeInfo.blocks.map((block) => ({
               blockIdentifier: block.blockIdentifier,
-              turno: block.turno,
+              turn: block.turn,
           })),
       });
   }
