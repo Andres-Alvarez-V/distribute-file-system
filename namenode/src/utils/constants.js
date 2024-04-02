@@ -1,0 +1,7 @@
+const MAX_SIZE_MB_FOR_SPLIT = 1;
+const MAX_NODES_TO_REPLICATE = 2;
+
+module.exports = {
+  MAX_SIZE_MB_FOR_SPLIT,
+  MAX_NODES_TO_REPLICATE
+};
