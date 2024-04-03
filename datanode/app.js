@@ -20,20 +20,34 @@ server.addService(BlocksTransfer.BlocksTransferService.service, {
   getBlock: (call, callback) => {
     // const block = getBlock(call.request);
     // callback(null, { block });
-    const block = fileSistem.blocks[call.request.blockIdentifier]
+
+    const flatBlocks = fileSystem.blocks.flat();
+
+    const blockMap = {};
+    flatBlocks.forEach((block) => {
+      blockMap[block.blockIdentifier] = block;
+    });
+
+    const search = call.request.blocksIdentifiers.map(
+      (blockIdentifier) => blockMap[blockIdentifier],
+    );
+    console.log("Response to send to client from getBlock", search);
+
+    const block = fileSystem.blocks[call.request.blockIdentifier];
     callback(null, { block });
   },
   saveBlock: (call, callback) => {
     // const success = saveBlock(call.request);
     // callback(null, { success });
-    fileSistem.blocks.push(call.request.blocks);
+    fileSystem.blocks.push(call.request.blocks);
+    console.log("fileSystem.blocks", fileSystem.blocks);
     callback(null, { success: true });
   },
 });
 
-const fileSistem = {
-    blocks: [],
-}
+const fileSystem = {
+  blocks: [],
+};
 
 server.bindAsync(
   process.env.DATANODE_ADDRESS,

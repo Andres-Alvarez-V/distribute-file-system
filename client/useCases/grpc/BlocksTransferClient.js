@@ -14,14 +14,23 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const BlocksTransferService =
   grpc.loadPackageDefinition(packageDefinition).BlocksTransferService;
-const client = new BlocksTransferService(
-  process.env.DATANODE_ADDRESS,
-  grpc.credentials.createInsecure(),
-);
+
+const clientCache = {};
+
+function useClient(dataNodeAddress) {
+  if (!clientCache[dataNodeAddress]) {
+    clientCache[dataNodeAddress] = new BlocksTransferService(
+      dataNodeAddress,
+      grpc.credentials.createInsecure(),
+    );
+  }
+  return clientCache[dataNodeAddress];
+}
 
 module.exports = {
-  getBlock: async (blocksIdentifiers) => {
+  getBlock: async (dataNodeAddress, blocksIdentifiers) => {
     return new Promise((resolve, reject) => {
+      const client = useClient(dataNodeAddress);
       client.getBlock(blocksIdentifiers, (err, response) => {
         if (err) {
           console.error("BlocksTransfer -> Error", err);
@@ -32,8 +41,9 @@ module.exports = {
       });
     });
   },
-  saveBlock: async (blocks) => {
+  saveBlock: async (dataNodeAddress, blocks) => {
     return new Promise((resolve, reject) => {
+      const client = useClient(dataNodeAddress);
       client.saveBlock(blocks, (err, response) => {
         if (err) {
           console.error("BlocksTransfer -> Error", err);

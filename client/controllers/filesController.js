@@ -23,7 +23,7 @@ async function postFiles(request, response) {
       response.status(400).json({ error: "File does not exist" });
       return;
     }
-    const fileMbSize = 2; //getFileMbSize(filePath);
+    const fileMbSize = 9; //getFileMbSize(filePath);
     const blocksInfo = await nameNodeService.postFiles(fileMbSize);
     await dataNodesConnection(blocksInfo, "write");
     response.json(blocksInfo);
@@ -40,13 +40,24 @@ async function dataNodesConnection(blocksInfo, action) {
 
 const dataNodeService = {
   async read(dataNode) {
-    const blocksIdentifiers = {  blocksIdentifiers: [dataNode.blocks[0].blockIdentifier] };
-    const response = await blocksTransferClient.getBlock(blocksIdentifiers);
+    const dataNodeAddress = "localhost:3004"; //dataNode.datanodeIP;
+    const blocksIdentifiers = {
+      blocksIdentifiers: dataNode.blocks.map(block => block.blockIdentifier),
+    };
+    console.log(blocksIdentifiers);
+    const response = await blocksTransferClient.getBlock(
+      dataNodeAddress,
+      blocksIdentifiers,
+    );
     console.log("DataNode read response", response);
   },
   async write(dataNode) {
+    const dataNodeAddress = "localhost:3004"; //dataNode.datanodeIP;
     const blocks = { blocks: dataNode.blocks };
-    const response = await blocksTransferClient.saveBlock(blocks);
+    const response = await blocksTransferClient.saveBlock(
+      dataNodeAddress,
+      blocks,
+    );
     console.log("DataNode write response", response);
   },
 };
