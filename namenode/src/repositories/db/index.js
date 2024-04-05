@@ -5,6 +5,7 @@ const datanodesIP = ['1','2','3'];
 { 
   fileIdentifier: {
     id: 'zz',
+    fileName: 'zz.txt',
     datanodes: [
       {
         datanodesIP: 'XXX.XXX.XXX.XXX',
@@ -28,6 +29,11 @@ const fileMetadata = new Map();
 
 const saveFileIdentifier = (fileIdentifier) => {
   fileMetadata.set(fileIdentifier, { id: fileIdentifier, datanodes: new Map() })
+}
+
+const saveFileName = (fileIdentifier, fileName) => {
+  const file = fileMetadata.get(fileIdentifier)
+  file.fileName = fileName
 }
 
 const saveDatanode = (fileIdentifier, datanodeIP) => {
@@ -92,5 +98,6 @@ module.exports = {
   getDatanodesIp,
   getDatanodesIter,
   saveDatanodesIter,
-  getFileMetadata
+  getFileMetadata,
+  saveFileName
 }
