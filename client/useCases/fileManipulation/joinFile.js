@@ -9,13 +9,11 @@ function joinFile(directoryPath, contentFile, turns) {
       .sort((a, b) => Object.keys(a)[0] - Object.keys(b)[0])
       .forEach((turn, i) => {
         const blockIdentifier = turn[`${i}`];
-        const data = contentFile[blockIdentifier];
+        const data = Buffer.from(contentFile[blockIdentifier], "binary");
         fileBlocks.push(data);
       });
 
-    const writeStream = fs.createWriteStream(
-      path.resolve(directoryPath),
-    );
+    const writeStream = fs.createWriteStream(path.resolve(directoryPath));
 
     writeStream.on("error", (err) => {
       reject(err);

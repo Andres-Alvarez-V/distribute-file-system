@@ -12,11 +12,11 @@ message GetBlockRequest {
 }
 
 message GetBlockResponse {
-  map<string, string> block = 1;
+  map<string, bytes> block = 1;
 }
 
 message SaveBlockRequest {
-  map<string, string> blocks = 1;
+  map<string, bytes> blocks = 1;
 }
 
 message SaveBlockResponse {

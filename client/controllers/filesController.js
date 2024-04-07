@@ -13,7 +13,7 @@ async function getFiles(request, response) {
     const blocksData = await dataNodeService.readDataNode(blocksInfo);
     const formattedData = await formatData(blocksInfo, blocksData);
     const downloadedFilePath = await fileManipulation.joinFile(
-      `${FILE_SYSTEM_PATH}${blocksInfo.fileName || "downloadedFile.txt"}`,
+      `${FILE_SYSTEM_PATH}${blocksInfo.fileName || "downloadedFile.mp3"}`,
       formattedData.contentFile,
       formattedData.turns,
     );
@@ -39,7 +39,9 @@ async function postFiles(request, response) {
     const blocks = await manageFilesBlocks(blocksInfo, filePath);
     await dataNodeService.writeDataNode(blocksInfo, blocks);
     response.json({
-      message: `The file ${blocksInfo.fileName ? blocksInfo.fileName + " " : ""}has been uploaded`,
+      message: `The file ${
+        blocksInfo.fileName ? blocksInfo.fileName + " " : ""
+      }has been uploaded`,
       idFile: blocksInfo.id,
     });
   } catch (error) {
