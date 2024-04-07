@@ -1,14 +1,25 @@
-const nameNodeService = require("../services/nameNodeService");
-const blocksTransferClient = require("../useCases/grpc/BlocksTransferClient");
-const fileExists = require("../utils/fileExists");
-const getFileMbSize = require("../utils/getFileMbSize");
+const FILE_SYSTEM_PATH = "repositories/fileSystem/";
+
+const nameNodeService = require("../repositories/services/nameNodeService");
+const dataNodeService = require("../repositories/services/dataNodeService");
+const fileManipulation = require("../useCases/fileManipulation/index");
+const fileExists = require("../core/utils/fileExists");
+const getFileMbSize = require("../core/utils/getFileMbSize");
 
 async function getFiles(request, response) {
   try {
     const fileIdentifier = request.query.fileIdentifier;
     const blocksInfo = await nameNodeService.getFiles(fileIdentifier);
-    await dataNodesConnection(blocksInfo, "read");
-    response.json(blocksInfo);
+    const blocksData = await dataNodeService.readDataNode(blocksInfo);
+    const formattedData = await formatData(blocksInfo, blocksData);
+    const downloadedFilePath = await fileManipulation.joinFile(
+      `${FILE_SYSTEM_PATH}`,
+      formattedData.contentFile,
+      formattedData.turns,
+    );
+    response.json({
+      message: `The file has been downloaded on ${downloadedFilePath}`,
+    });
   } catch (error) {
     response.status(500).json({ error: error.message });
   }
@@ -17,50 +28,64 @@ async function getFiles(request, response) {
 async function postFiles(request, response) {
   try {
     const fileName = request.body.fileName;
-    const filePath = `useCases/files/${fileName}`;
+    const filePath = `repositories/fileSystem/${fileName}`;
     const exists = fileExists(filePath);
     if (!exists) {
       response.status(400).json({ error: "File does not exist" });
       return;
     }
-    const fileMbSize = 9; //getFileMbSize(filePath);
+    const fileMbSize = 4; //getFileMbSize(filePath);
     const blocksInfo = await nameNodeService.postFiles(fileMbSize);
-    await dataNodesConnection(blocksInfo, "write");
-    response.json(blocksInfo);
+    const blocks = await manageFilesBlocks(blocksInfo, filePath);
+    await dataNodeService.writeDataNode(blocksInfo, blocks);
+    response.json({
+      message: `The file has been uploaded`,
+      idFile: blocksInfo.id,
+    });
   } catch (error) {
     response.status(500).json({ error: error.message });
   }
 }
 
-async function dataNodesConnection(blocksInfo, action) {
-  await Promise.all(
-    blocksInfo.datanodes.map((dataNode) => dataNodeService[action](dataNode)),
+async function manageFilesBlocks(blocksInfo, filePath) {
+  const blockIdentifiers = blocksInfo.datanodes
+    .map((datanode) => datanode.blocks)
+    .flat();
+  const fileBlocksPath = await fileManipulation.splitFile(
+    filePath,
+    blockIdentifiers,
   );
+  const blocksPromises = fileBlocksPath.map(async (blockPath) => {
+    const block = await fileManipulation.readFile(blockPath);
+    return block;
+  });
+
+  const blocks = await Promise.all(blocksPromises);
+
+  return blocks;
 }
 
-const dataNodeService = {
-  async read(dataNode) {
-    const dataNodeAddress = "localhost:3004"; //dataNode.datanodeIP;
-    const blocksIdentifiers = {
-      blocksIdentifiers: dataNode.blocks.map(block => block.blockIdentifier),
-    };
-    console.log(blocksIdentifiers);
-    const response = await blocksTransferClient.getBlock(
-      dataNodeAddress,
-      blocksIdentifiers,
-    );
-    console.log("DataNode read response", response);
-  },
-  async write(dataNode) {
-    const dataNodeAddress = "localhost:3004"; //dataNode.datanodeIP;
-    const blocks = { blocks: dataNode.blocks };
-    const response = await blocksTransferClient.saveBlock(
-      dataNodeAddress,
-      blocks,
-    );
-    console.log("DataNode write response", response);
-  },
-};
+async function formatData(blocksInfo, blocksData) {
+  const turns = blocksInfo.datanodes.flatMap((datanode) =>
+    datanode.blocks.map((block) => {
+      return { [block.turn]: block.blockIdentifier };
+    }),
+  );
+
+  const contentFile = blocksData
+    .flat()
+    .map((block) => {
+      return block.block;
+    })
+    .reduce((acc, curr) => {
+      const [key] = Object.keys(curr);
+      const value = curr[key];
+      acc[key] = value;
+      return acc;
+    }, {});
+
+  return { turns, contentFile };
+}
 
 module.exports = {
   getFiles,
