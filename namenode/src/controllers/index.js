@@ -8,6 +8,7 @@ const {
 	getDatanodesIp,
 	saveDatanodesIter,
   getFileMetadata: getFileMetadataRepository,
+	saveFileName
 } = require("../repositories/db");
 
 const createAndSaveFileIdentifier = () => {
@@ -26,13 +27,15 @@ const createAndSaveFileBlock = (fileIdentifier, datanodeIP, turn) => {
 	saveBlock(fileIdentifier, datanodeIP, blockIdentifier, turn);
 };
 
-const createAndSaveFileMapper = (fileSize) => {
+const createAndSaveFileMapper = (fileSize, fileName) => {
 	const fileIdentifier = createAndSaveFileIdentifier();
+	saveFileName(fileIdentifier, fileName);
   getFileMetadata(fileIdentifier);
 
-	const datanodesNeeded =
-		(fileSize + MAX_SIZE_MB_FOR_SPLIT - 1) / MAX_SIZE_MB_FOR_SPLIT;
+	const datanodesNeeded = Math.ceil((fileSize) / MAX_SIZE_MB_FOR_SPLIT);
 	const availableDatanodesIp = getDatanodesIp();
+	console.log("datanodesNeeded", datanodesNeeded);
+	console.log("availableDatanodesIp", availableDatanodesIp);
 	const availableDatanodesIpQuantity = availableDatanodesIp.length;
 	const datanodesIter = getDatanodesIter();
 

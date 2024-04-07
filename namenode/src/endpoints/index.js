@@ -13,8 +13,8 @@ router.get("/file", (req, res) => {
 });
 
 router.post("/write", (req, res) => {
-	const { fileMbSize } = req.body;
-	const fileMetadata = createAndSaveFileMapper(fileMbSize);
+	const { fileMbSize, fileName } = req.body;
+	const fileMetadata = createAndSaveFileMapper(fileMbSize, fileName);
 	res.status(201).json(fileMetadata);
 });
 
