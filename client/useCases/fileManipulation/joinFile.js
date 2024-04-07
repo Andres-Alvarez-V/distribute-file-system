@@ -14,7 +14,7 @@ function joinFile(directoryPath, contentFile, turns) {
       });
 
     const writeStream = fs.createWriteStream(
-      path.resolve(directoryPath, "downloadedFile.txt"),
+      path.resolve(directoryPath),
     );
 
     writeStream.on("error", (err) => {

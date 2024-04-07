@@ -16,9 +16,9 @@ async function getFiles(fileIdentifier) {
   }
 }
 
-async function postFiles(fileMbSize) {
+async function postFiles(fileMbSize, fileName) {
   try {
-    const response = await axios.post(`${NAME_NODE_URL}write`, { fileMbSize });
+    const response = await axios.post(`${NAME_NODE_URL}write`, { fileMbSize, fileName });
     console.log("\nNameNode postFiles response:", response.data, "\n");
     return response.data;
   } catch (error) {

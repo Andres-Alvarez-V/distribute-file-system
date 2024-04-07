@@ -13,7 +13,7 @@ async function getFiles(request, response) {
     const blocksData = await dataNodeService.readDataNode(blocksInfo);
     const formattedData = await formatData(blocksInfo, blocksData);
     const downloadedFilePath = await fileManipulation.joinFile(
-      `${FILE_SYSTEM_PATH}`,
+      `${FILE_SYSTEM_PATH}${blocksInfo.fileName || "downloadedFile.txt"}`,
       formattedData.contentFile,
       formattedData.turns,
     );
@@ -34,12 +34,12 @@ async function postFiles(request, response) {
       response.status(400).json({ error: "File does not exist" });
       return;
     }
-    const fileMbSize = 4; //getFileMbSize(filePath);
-    const blocksInfo = await nameNodeService.postFiles(fileMbSize);
+    const fileMbSize = getFileMbSize(filePath);
+    const blocksInfo = await nameNodeService.postFiles(fileMbSize, fileName);
     const blocks = await manageFilesBlocks(blocksInfo, filePath);
     await dataNodeService.writeDataNode(blocksInfo, blocks);
     response.json({
-      message: `The file has been uploaded`,
+      message: `The file ${blocksInfo.fileName ? blocksInfo.fileName + " " : ""}has been uploaded`,
       idFile: blocksInfo.id,
     });
   } catch (error) {
