@@ -2,12 +2,12 @@ const BLOCKS_PATH = "repositories/blocks/";
 
 const fileManipulation = require("../useCases/fileManipulation/index");
 
-async function getBlock(call) {
+async function getBlock(blockIdentifier) {
   let block = { block: {} };
-  block.block[call.request.blockIdentifier] = await fileManipulation.readFile(
-    `${BLOCKS_PATH}${call.request.blockIdentifier}`,
+  block.block[blockIdentifier] = await fileManipulation.readFile(
+    `${BLOCKS_PATH}${blockIdentifier}`,
   );
-  console.log("Block asked:", call.request.blockIdentifier);
+  console.log("Block asked:", blockIdentifier);
   return block;
 }
 

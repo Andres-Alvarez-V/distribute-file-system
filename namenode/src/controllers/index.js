@@ -8,7 +8,8 @@ const {
 	getDatanodesIp,
 	saveDatanodesIter,
   getFileMetadata: getFileMetadataRepository,
-	saveFileName
+	saveFileName,
+	addDatanodeIp
 } = require("../repositories/db");
 const { HearBeat } = require('../repositories/grpc/client/SyncDataNodes');
 
@@ -62,12 +63,19 @@ const getFileMetadata = (fileIdentifier) => {
 const runHeartBeat = () => {
 	try {
 		const datanodesIp = getDatanodesIp();
+		const failedDatanodes = [];
 		
 		Promise.all(datanodesIp.map(async (datanodeIp) => {
-			const response = await HearBeat(datanodeIp);
-			console.log("Response from HeartBeat:", response);
+			try {
+				const response = await HearBeat(datanodeIp);
+				console.log("Response from HeartBeat:", response);
+			} catch (error) {
+				console.error(`Error running HeartBeat ${datanodeIp}.`);
+				failedDatanodes.push(datanodeIp);
+			}
 		}));
 		
+		console.log(`Failed Datanodes ${failedDatanodes}`);
 	} catch (error) {
 		console.error("Error in runHeartBeat", error);
 	}
@@ -76,12 +84,13 @@ const runHeartBeat = () => {
 const dataNodeLogin = (dataNodeIp) => {
 	const datanodesIp = getDatanodesIp();
 	if (!datanodesIp.includes(dataNodeIp)) {
-		datanodesIp.push(dataNodeIp);
+		addDatanodeIp(dataNodeIp);
 	}
 }
 
 module.exports = {
   createAndSaveFileMapper,
   getFileMetadata,
-	runHeartBeat
+	runHeartBeat, 
+	dataNodeLogin
 }

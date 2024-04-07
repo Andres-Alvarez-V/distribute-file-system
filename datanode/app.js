@@ -6,6 +6,8 @@ process.loadEnvFile();
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
 const { getBlock, saveBlock } = require("./controllers/blocksControllers");
+const { login } = require("./controllers/loginController");
+const { syncNodeBlock } = require("./controllers/syncDataNodes");
 process.loadEnvFile();
 
 const blockTransferPackageDefinition = protoLoader.loadSync(BLOCKS_TRANSFER_PROTO_PATH, {
@@ -28,19 +30,19 @@ const server = new grpc.Server();
 server.addService(SyncDataNodes.SyncDataNodesService.service, {
   heartBeat: (call, callback) => {
     console.log("HeartBeat from", call);
-    throw new Error("Not implemented");
     callback();
   },
 
-  syncNodeBlock: (call, callback) => {
+  syncNodeBlock: async (call, callback) => {
     console.log("SyncNodeBlock from", call.request);
+    await syncNodeBlock(call.request.datanodeIp, call.request.fileIdentifier);
     callback();
   }
 });
 
 server.addService(BlocksTransfer.BlocksTransferService.service, {
   getBlock: async (call, callback) => {
-    const block = await getBlock(call);
+    const block = await getBlock(call.request.blockIdentifier);
     callback(null, block);
   },
   saveBlock: async (call, callback) => {
@@ -52,12 +54,13 @@ server.addService(BlocksTransfer.BlocksTransferService.service, {
 server.bindAsync(
   process.env.DATANODE_ADDRESS,
   grpc.ServerCredentials.createInsecure(),
-  (err) => {
+  async (err) => {
     if (err) {
       console.error(`DataNode Server failed to start: ${err}`);
       return;
     }
-    server.start();
+    await login(process.env.DATANODE_ADDRESS)
+
     console.log(`DataNode Server running at ${process.env.DATANODE_ADDRESS}`);
     
   },

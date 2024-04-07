@@ -1,0 +1,33 @@
+version: '3'
+services:
+  datanode1:
+    container_name: datanode1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NAME_NODE_IP=172.20.0.6:5000
+      - DATANODE_ADDRESS=172.20.0.2:3000
+    networks:
+      mynet:
+        ipv4_address: 172.20.0.2
+
+  datanode2:
+    container_name: datanode2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NAME_NODE_IP=172.20.0.6:5000
+      - DATANODE_ADDRESS=172.20.0.3:3001
+    networks:
+      mynet:
+        ipv4_address: 172.20.0.3
+networks:
+  mynet:
+    external:
+      name: mynet

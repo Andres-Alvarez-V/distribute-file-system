@@ -1,5 +1,5 @@
 let datanodesIter = 0;
-const datanodesIP = ['1','2','3'];
+const datanodesIP = [];
 // fileIdentifier -> datanode -> [{ blockIdentifier  | numero de turno}, ....]
 /*
 { 
@@ -54,6 +54,12 @@ const getDatanodesIp = () => {
   return datanodesIP;
 }
 
+const addDatanodeIp = (datanodeIP) => {
+  datanodesIP.push(datanodeIP);
+  console.log("Datanode added:", datanodeIP);
+  console.log("Datanodes:", datanodesIP);
+}
+
 const getDatanodesIter = () => {
   return datanodesIter;
 }
@@ -99,5 +105,6 @@ module.exports = {
   getDatanodesIter,
   saveDatanodesIter,
   getFileMetadata,
-  saveFileName
+  saveFileName,
+  addDatanodeIp
 }
