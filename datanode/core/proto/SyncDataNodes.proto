@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+// Services definition
+service SyncDataNodesService {
+  rpc HeartBeat(Empty) returns (Empty);
+  rpc SyncNodeBlock(SyncNodeBlockRequest) returns (Empty);
+}
+
+//Messages definition
+message SyncNodeBlockRequest {
+  string nodeToSyncIP = 1;
+  string blockIdentifier = 2;
+}
+
+
+
+message Empty {}

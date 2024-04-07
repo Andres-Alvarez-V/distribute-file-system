@@ -10,6 +10,7 @@ const {
   getFileMetadata: getFileMetadataRepository,
 	saveFileName
 } = require("../repositories/db");
+const { HearBeat } = require('../repositories/grpc/client/SyncDataNodes');
 
 const createAndSaveFileIdentifier = () => {
 	const fileIdentifier = uuidv4();
@@ -55,7 +56,32 @@ const createAndSaveFileMapper = (fileSize, fileName) => {
 const getFileMetadata = (fileIdentifier) => {
   return getFileMetadataRepository(fileIdentifier);
 }
+
+
+
+const runHeartBeat = () => {
+	try {
+		const datanodesIp = getDatanodesIp();
+		
+		Promise.all(datanodesIp.map(async (datanodeIp) => {
+			const response = await HearBeat(datanodeIp);
+			console.log("Response from HeartBeat:", response);
+		}));
+		
+	} catch (error) {
+		console.error("Error in runHeartBeat", error);
+	}
+}
+
+const dataNodeLogin = (dataNodeIp) => {
+	const datanodesIp = getDatanodesIp();
+	if (!datanodesIp.includes(dataNodeIp)) {
+		datanodesIp.push(dataNodeIp);
+	}
+}
+
 module.exports = {
   createAndSaveFileMapper,
-  getFileMetadata
+  getFileMetadata,
+	runHeartBeat
 }

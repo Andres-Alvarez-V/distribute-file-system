@@ -1,20 +1,42 @@
-const PROTO_PATH = __dirname + "/core/proto/BlocksTransfer.proto";
+const BLOCKS_TRANSFER_PROTO_PATH = __dirname + "/core/proto/BlocksTransfer.proto";
+const SYNC_DATA_NODES_PROTO_PATH = __dirname + "/core/proto/SyncDataNodes.proto";
+
+process.loadEnvFile();
 
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
 const { getBlock, saveBlock } = require("./controllers/blocksControllers");
-
 process.loadEnvFile();
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+const blockTransferPackageDefinition = protoLoader.loadSync(BLOCKS_TRANSFER_PROTO_PATH, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  arrays: true,
+});
+const syncDataNodesPackageDefinition = protoLoader.loadSync(SYNC_DATA_NODES_PROTO_PATH, {
   keepCase: true,
   longs: String,
   enums: String,
   arrays: true,
 });
 
-const BlocksTransfer = grpc.loadPackageDefinition(packageDefinition);
+const BlocksTransfer = grpc.loadPackageDefinition(blockTransferPackageDefinition);
+const SyncDataNodes = grpc.loadPackageDefinition(syncDataNodesPackageDefinition);
 const server = new grpc.Server();
+
+server.addService(SyncDataNodes.SyncDataNodesService.service, {
+  heartBeat: (call, callback) => {
+    console.log("HeartBeat from", call);
+    throw new Error("Not implemented");
+    callback();
+  },
+
+  syncNodeBlock: (call, callback) => {
+    console.log("SyncNodeBlock from", call.request);
+    callback();
+  }
+});
 
 server.addService(BlocksTransfer.BlocksTransferService.service, {
   getBlock: async (call, callback) => {
@@ -37,5 +59,6 @@ server.bindAsync(
     }
     server.start();
     console.log(`DataNode Server running at ${process.env.DATANODE_ADDRESS}`);
+    
   },
 );
