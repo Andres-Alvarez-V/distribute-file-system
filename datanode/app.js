@@ -26,7 +26,6 @@ const syncDataNodesPackageDefinition = protoLoader.loadSync(SYNC_DATA_NODES_PROT
 const BlocksTransfer = grpc.loadPackageDefinition(blockTransferPackageDefinition);
 const SyncDataNodes = grpc.loadPackageDefinition(syncDataNodesPackageDefinition);
 const server = new grpc.Server();
-
 server.addService(SyncDataNodes.SyncDataNodesService.service, {
   heartBeat: (call, callback) => {
     console.log("HeartBeat from", call);
@@ -34,8 +33,13 @@ server.addService(SyncDataNodes.SyncDataNodesService.service, {
   },
 
   syncNodeBlock: async (call, callback) => {
-    console.log("SyncNodeBlock from", call.request);
-    await syncNodeBlock(call.request.datanodeIp, call.request.fileIdentifier);
+    console.log("SyncNodeBlock from", call);
+    const { nodeToSyncIP, blockIdentifier } = call.request;
+    if (!nodeToSyncIP || !blockIdentifier) {
+      callback(new Error("Invalid parameters"));
+      return;
+    } 
+    await syncNodeBlock(nodeToSyncIP, blockIdentifier);
     callback();
   }
 });

@@ -60,12 +60,12 @@ const getFileMetadata = (fileIdentifier) => {
 
 
 
-const runHeartBeat = () => {
+const runHeartBeat = async () => {
 	try {
 		const datanodesIp = getDatanodesIp();
 		const failedDatanodes = [];
 		
-		Promise.all(datanodesIp.map(async (datanodeIp) => {
+		await (Promise.all(datanodesIp.map(async (datanodeIp) => {
 			try {
 				const response = await HearBeat(datanodeIp);
 				console.log("Response from HeartBeat:", response);
@@ -73,7 +73,7 @@ const runHeartBeat = () => {
 				console.error(`Error running HeartBeat ${datanodeIp}.`);
 				failedDatanodes.push(datanodeIp);
 			}
-		}));
+		})));
 		
 		console.log(`Failed Datanodes ${failedDatanodes}`);
 	} catch (error) {

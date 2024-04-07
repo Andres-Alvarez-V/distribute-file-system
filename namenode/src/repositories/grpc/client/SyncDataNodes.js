@@ -12,7 +12,6 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const SyncDataNodesService =
 	grpc.loadPackageDefinition(packageDefinition).SyncDataNodesService;
-
 const HearBeat = async (dataNodeIp) => {
 	const client = new SyncDataNodesService(
 		dataNodeIp,
@@ -21,7 +20,7 @@ const HearBeat = async (dataNodeIp) => {
 
 	try {
 		const response = await new Promise((resolve, reject) => {
-			client.HeartBeat({}, (err, response) => {
+			client.heartBeat({},{ deadline: Date.now() + 3000 }, (err, response) => {
 				if (err) {
 					reject(err);
 				} else {
@@ -35,14 +34,42 @@ const HearBeat = async (dataNodeIp) => {
 	} catch (error) {
 		// Manejar errores aquí
 		console.error("Error en HeartBeat:", error);
+		throw error; // Lanza el error para que sea manejado por código externo si es necesario
+	}
+};
+
+
+const SyncNodeBlock = async (dataNodeIp, dataNodeIpToSync, fileIdentifier) => {
+	const client = new SyncDataNodesService(
+		dataNodeIp,
+		grpc.credentials.createInsecure()
+	);
+
+	try {
+		const response = await new Promise((resolve, reject) => {
+			client.syncNodeBlock({ nodeToSyncIP: dataNodeIpToSync, blockIdentifier: fileIdentifier }, (err, response) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(response);
+				}
+			});
+		});
+
+		console.log(`Block ${fileIdentifier} sent to DataNode ${dataNodeIpToSync} from DataNode ${dataNodeIp}`);
+		return response;
+	} catch (error) {
+		// Manejar errores aquí
+		console.error("Error en SyncNodeBlock:", error);
 		// Obtener el código de estado del error
 		const statusCode = error.code;
 		console.log("Código de estado:", statusCode);
 		// y así sucesivamente para otros códigos de estado
 		throw error; // Lanza el error para que sea manejado por código externo si es necesario
 	}
-};
+}
 
 module.exports = {
 	HearBeat,
+	SyncNodeBlock
 };

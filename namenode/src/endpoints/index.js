@@ -1,8 +1,14 @@
 const { Router } = require("express");
 const router = Router();
 const { createAndSaveFileMapper, getFileMetadata, runHeartBeat, dataNodeLogin } = require("../controllers");
+const { SyncNodeBlock } = require("../repositories/grpc/client/SyncDataNodes");
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+	try {
+		await SyncNodeBlock("172.20.0.2:3000", "172.20.0.3:3001", "aee8d53f-15b1-4a28-bb25-f6d7cbfa3424-4")
+	} catch (error) {
+		
+	}
 	res.send("Hello World");
 });
 
@@ -18,8 +24,8 @@ router.post("/write", (req, res) => {
 	res.status(201).json(fileMetadata);
 });
 
-router.post("/runHeartBeat", (req, res) => {
-	runHeartBeat();
+router.post("/runHeartBeat", async (req, res) => {
+	await runHeartBeat();
 	res.status(200).json({ message: "Heartbeat received" });
 });
 
