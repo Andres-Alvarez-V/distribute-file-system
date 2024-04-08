@@ -1,4 +1,5 @@
 const FILE_SYSTEM_PATH = "repositories/fileSystem/";
+const FILES_BLOCKS_PATH = "repositories/filesBlocks/";
 
 const nameNodeService = require("../repositories/services/nameNodeService");
 const dataNodeService = require("../repositories/services/dataNodeService");
@@ -37,6 +38,7 @@ async function postFiles(request, response) {
     const fileMbSize = getFileMbSize(filePath);
     const blocksInfo = await nameNodeService.postFiles(fileMbSize, fileName);
     const blocks = await manageFilesBlocks(blocksInfo, filePath);
+    fileManipulation.deleteFolderContent(FILES_BLOCKS_PATH)
     await dataNodeService.writeDataNode(blocksInfo, blocks);
     response.json({
       message: `The file ${
