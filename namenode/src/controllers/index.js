@@ -1,5 +1,8 @@
-const { v4: uuidv4 } = require('uuid')
-const { MAX_SIZE_MB_FOR_SPLIT } = require("../utils/constants");
+const { v4: uuidv4 } = require("uuid");
+const {
+	MAX_SIZE_MB_FOR_SPLIT,
+	MAX_NODES_TO_REPLICATE,
+} = require("../utils/constants");
 const {
 	saveFileIdentifier,
 	saveDatanode,
@@ -7,11 +10,19 @@ const {
 	getDatanodesIter,
 	getDatanodesIp,
 	saveDatanodesIter,
-  getFileMetadata: getFileMetadataRepository,
+	getFileMetadata: getFileMetadataRepository,
 	saveFileName,
-	addDatanodeIp
+	addDatanodeIp,
+	getAllFilesMetadata,
+	logFilesMetadata,
+	getBlocksFromFailedDatanodes,
+	deleteDatanodes,
+	getBlocksWithDatanodeIp,
 } = require("../repositories/db");
-const { HearBeat } = require('../repositories/grpc/client/SyncDataNodes');
+const {
+	HearBeat,
+	SyncNodeBlock,
+} = require("../repositories/grpc/client/SyncDataNodes");
 
 const createAndSaveFileIdentifier = () => {
 	const fileIdentifier = uuidv4();
@@ -32,9 +43,8 @@ const createAndSaveFileBlock = (fileIdentifier, datanodeIP, turn) => {
 const createAndSaveFileMapper = (fileSize, fileName) => {
 	const fileIdentifier = createAndSaveFileIdentifier();
 	saveFileName(fileIdentifier, fileName);
-  getFileMetadata(fileIdentifier);
 
-	const datanodesNeeded = Math.ceil((fileSize) / MAX_SIZE_MB_FOR_SPLIT);
+	const datanodesNeeded = Math.ceil(fileSize / MAX_SIZE_MB_FOR_SPLIT);
 	const availableDatanodesIp = getDatanodesIp();
 	console.log("datanodesNeeded", datanodesNeeded);
 	console.log("availableDatanodesIp", availableDatanodesIp);
@@ -42,55 +52,84 @@ const createAndSaveFileMapper = (fileSize, fileName) => {
 	const datanodesIter = getDatanodesIter();
 
 	for (let i = 0; i < datanodesNeeded; i += 1) {
-		const j = (datanodesIter + i) % availableDatanodesIpQuantity;
-		saveDatanodeInFileMetadata(fileIdentifier, availableDatanodesIp[j]);
-		createAndSaveFileBlock(fileIdentifier, availableDatanodesIp[j], i);
+		for (let j = 0; j < MAX_NODES_TO_REPLICATE; j += 1) {
+			const k = (i * MAX_NODES_TO_REPLICATE + j) % availableDatanodesIpQuantity;
+			saveDatanodeInFileMetadata(fileIdentifier, availableDatanodesIp[k]);
+			createAndSaveFileBlock(fileIdentifier, availableDatanodesIp[k], i);
+		}
 	}
 
 	const newDatanodesIter =
 		(datanodesIter + datanodesNeeded) % availableDatanodesIpQuantity;
 	saveDatanodesIter(newDatanodesIter);
-  const fileMetadata = getFileMetadata (fileIdentifier);
-  return fileMetadata;
+	logFilesMetadata();
+	const fileMetadata = getFileMetadata(fileIdentifier);
+	return fileMetadata;
 };
 
 const getFileMetadata = (fileIdentifier) => {
-  return getFileMetadataRepository(fileIdentifier);
-}
-
-
+	return getFileMetadataRepository(fileIdentifier);
+};
 
 const runHeartBeat = async () => {
 	try {
 		const datanodesIp = getDatanodesIp();
 		const failedDatanodes = [];
-		
-		await (Promise.all(datanodesIp.map(async (datanodeIp) => {
-			try {
-				const response = await HearBeat(datanodeIp);
-				console.log("Response from HeartBeat:", response);
-			} catch (error) {
-				console.error(`Error running HeartBeat ${datanodeIp}.`);
-				failedDatanodes.push(datanodeIp);
-			}
-		})));
-		
+
+		await Promise.all(
+			datanodesIp.map(async (datanodeIp) => {
+				try {
+					const response = await HearBeat(datanodeIp);
+					console.log("Response from HeartBeat:", response);
+				} catch (error) {
+					failedDatanodes.push(datanodeIp);
+				}
+			})
+		);
+
 		console.log(`Failed Datanodes ${failedDatanodes}`);
+
+		const blocksFromFailedDatanodes =
+			getBlocksFromFailedDatanodes(failedDatanodes);
+		deleteDatanodes(failedDatanodes);
+		const blocksWithDatanodeIp = getBlocksWithDatanodeIp(
+			blocksFromFailedDatanodes
+		);
+
+		const availableDatanodesIp = getDatanodesIp();
+		const availableDatanodesIpQuantity = availableDatanodesIp.length;
+		let datanodesIter = getDatanodesIter();
+
+		await (Promise.all(
+			blocksWithDatanodeIp.map(async (block) => {
+				datanodesIter = (datanodesIter + 1) % availableDatanodesIpQuantity;
+				if (availableDatanodesIp[datanodesIter] === block.datanodeIP) {
+					datanodesIter = (datanodesIter + 1) % availableDatanodesIpQuantity;
+				}
+				const datanodeIpToSync = availableDatanodesIp[datanodesIter];
+				await SyncNodeBlock(
+					block.datanodeIP,
+					datanodeIpToSync,
+					block.blockIdentifier
+				);
+			})
+		));
+		saveDatanodesIter(datanodesIter);
 	} catch (error) {
 		console.error("Error in runHeartBeat", error);
 	}
-}
+};
 
 const dataNodeLogin = (dataNodeIp) => {
 	const datanodesIp = getDatanodesIp();
 	if (!datanodesIp.includes(dataNodeIp)) {
 		addDatanodeIp(dataNodeIp);
 	}
-}
+};
 
 module.exports = {
-  createAndSaveFileMapper,
-  getFileMetadata,
-	runHeartBeat, 
-	dataNodeLogin
-}
+	createAndSaveFileMapper,
+	getFileMetadata,
+	runHeartBeat,
+	dataNodeLogin,
+};
