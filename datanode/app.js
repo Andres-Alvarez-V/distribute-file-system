@@ -28,12 +28,12 @@ const SyncDataNodes = grpc.loadPackageDefinition(syncDataNodesPackageDefinition)
 const server = new grpc.Server();
 server.addService(SyncDataNodes.SyncDataNodesService.service, {
   heartBeat: (call, callback) => {
-    console.log("HeartBeat from", call);
+    console.log("HeartBeat call");
     callback();
   },
 
   syncNodeBlock: async (call, callback) => {
-    console.log("SyncNodeBlock from", call);
+    console.log("SyncNodeBlock call");
     const { nodeToSyncIP, blockIdentifier } = call.request;
     if (!nodeToSyncIP || !blockIdentifier) {
       callback(new Error("Invalid parameters"));

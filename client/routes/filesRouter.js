@@ -2,11 +2,19 @@ const filesController = require("../controllers/filesController");
 const filesRouter = require("express").Router();
 
 filesRouter.get("/file", (request, response) => {
-  filesController.getFiles(request, response);
+  try{
+    filesController.getFiles(request, response);
+  }catch(error){
+    console.error(error);
+  }
 });
 
 filesRouter.post("/write", (request, response) => {
-  filesController.postFiles(request, response);
+  try{
+    filesController.postFiles(request, response);
+  }catch(error) {
+    console.error(error);
+  }
 });
 
 module.exports = filesRouter;

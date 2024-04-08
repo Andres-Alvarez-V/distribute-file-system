@@ -4,32 +4,31 @@ const { createAndSaveFileMapper, getFileMetadata, runHeartBeat, dataNodeLogin } 
 const { SyncNodeBlock } = require("../repositories/grpc/client/SyncDataNodes");
 
 router.get("/", async (req, res) => {
-	try {
-		await SyncNodeBlock("172.20.0.2:3000", "172.20.0.3:3001", "aee8d53f-15b1-4a28-bb25-f6d7cbfa3424-4")
-	} catch (error) {
-		
-	}
 	res.send("Hello World");
 });
 
 router.get("/file", (req, res) => {
+	console.log("GET /file");
 	const { fileIdentifier } = req.query;
   const fileMetadata = getFileMetadata(fileIdentifier);
 	res.status(200).json(fileMetadata);
 });
 
 router.post("/write", (req, res) => {
+	console.log("POST /write");
 	const { fileMbSize, fileName } = req.body;
 	const fileMetadata = createAndSaveFileMapper(fileMbSize, fileName);
 	res.status(201).json(fileMetadata);
 });
 
 router.post("/runHeartBeat", async (req, res) => {
+	console.log("POST /runHeartBeat");
 	await runHeartBeat();
 	res.status(200).json({ message: "Heartbeat received" });
 });
 
 router.post("/datanodeLogin", (req, res) => {
+	console.log("POST /datanodeLogin");
 	try {
 		const { datanodeAddress } = req.body;
 		dataNodeLogin(datanodeAddress);

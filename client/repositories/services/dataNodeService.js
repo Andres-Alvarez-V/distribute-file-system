@@ -13,9 +13,9 @@ async function writeDataNode(blocksInfo, blocks) {
           }
         });
 
-        selectedBlocks.forEach(async (block, i) => {
+        await Promise.all(selectedBlocks.map(async (block, i) => {
           await write(dataNode, block, i);
-        });
+        }));
       }),
     );
   } catch (error) {
@@ -26,6 +26,7 @@ async function writeDataNode(blocksInfo, blocks) {
 
 async function write(dataNode, block, i) {
   const dataNodeAddress = dataNode.datanodeIP;
+  console.log("DatanodeAddress: ", dataNodeAddress)
   let blockData = {};
   blockData[dataNode.blocks[i].blockIdentifier] = block;
   const response = await blocksTransferClient.saveBlock(dataNodeAddress, {
@@ -36,6 +37,26 @@ async function write(dataNode, block, i) {
 
 async function readDataNode(blocksInfo) {
   try {
+    console.log("BlocksInfo: ", blocksInfo)
+    const datanodesInfoGroupByBlockIdentifier = [];
+    blocksInfo.datanodes.reduce((acc, curr) => {
+      const blocks = curr.blocks;
+      const blocksGroupByBlockIdentifier = [];
+      blocks.map((block) => {
+        if(!acc.has(block.blockIdentifier)) {
+          acc.add(block.blockIdentifier);
+          blocksGroupByBlockIdentifier.push(block);
+        }
+      });
+      datanodesInfoGroupByBlockIdentifier.push({
+        datanodeIP: curr.datanodeIP,
+        blocks: blocksGroupByBlockIdentifier,
+      });
+      return acc;
+    }, new Set());
+
+    blocksInfo.datanodes = datanodesInfoGroupByBlockIdentifier;
+    console.log("BlocksInfo: ", blocksInfo)
     let blockData = await Promise.all(
       blocksInfo.datanodes.flatMap(async (dataNode) => {
         return await Promise.all(

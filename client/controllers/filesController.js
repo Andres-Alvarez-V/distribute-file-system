@@ -22,6 +22,7 @@ async function getFiles(request, response) {
       message: `The file has been downloaded on ${downloadedFilePath}`,
     });
   } catch (error) {
+    console.error(error);
     response.status(500).json({ error: error.message });
   }
 }
@@ -39,7 +40,9 @@ async function postFiles(request, response) {
     const blocksInfo = await nameNodeService.postFiles(fileMbSize, fileName);
     const blocks = await manageFilesBlocks(blocksInfo, filePath);
     fileManipulation.deleteFolderContent(FILES_BLOCKS_PATH)
+    
     await dataNodeService.writeDataNode(blocksInfo, blocks);
+    
     response.json({
       message: `The file ${
         blocksInfo.fileName ? blocksInfo.fileName + " " : ""

@@ -4,12 +4,11 @@ const path = require("path");
 function writeFile(filePath, data) {
   return new Promise((resolve, reject) => {
     const buffer = Buffer.from(data);
-    fs.writeFileSync(filePath, buffer, (err) => {
+    fs.writeFile(filePath, buffer, (err) => {
       if (err) {
         reject(err);
-      } else {
-        resolve();
-      }
+      } 
+      resolve();
     });
   });
 }

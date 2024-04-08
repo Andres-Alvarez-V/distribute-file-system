@@ -7,7 +7,7 @@ const NAME_NODE_URL = process.env.NAME_NODE_URL;
 async function getFiles(fileIdentifier) {
   try {
     const response = await axios.get(
-      `${NAME_NODE_URL}file?fileIdentifier=${fileIdentifier}`,
+      `${NAME_NODE_URL}/file?fileIdentifier=${fileIdentifier}`,
     );
     console.log("\nNameNode getFiles response:", response.data, "\n");
     return response.data;

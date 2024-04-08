@@ -80,19 +80,21 @@ const runHeartBeat = async () => {
 			datanodesIp.map(async (datanodeIp) => {
 				try {
 					const response = await HearBeat(datanodeIp);
-					console.log("Response from HeartBeat:", response);
 				} catch (error) {
 					failedDatanodes.push(datanodeIp);
 				}
 			})
 		);
-
+		console.log("Heartbeat sucess")
+		if(failedDatanodes.length === 0) {
+			return;
+		}
 		console.log(`Failed Datanodes ${failedDatanodes}`);
 
 		const blocksFromFailedDatanodes =
 			getBlocksFromFailedDatanodes(failedDatanodes);
 		deleteDatanodes(failedDatanodes);
-		const blocksWithDatanodeIp = getBlocksWithDatanodeIp(
+		const blocksWithRelatedInfo = getBlocksWithDatanodeIp(
 			blocksFromFailedDatanodes
 		);
 
@@ -101,7 +103,7 @@ const runHeartBeat = async () => {
 		let datanodesIter = getDatanodesIter();
 
 		await (Promise.all(
-			blocksWithDatanodeIp.map(async (block) => {
+			blocksWithRelatedInfo.map(async (block) => {
 				datanodesIter = (datanodesIter + 1) % availableDatanodesIpQuantity;
 				if (availableDatanodesIp[datanodesIter] === block.datanodeIP) {
 					datanodesIter = (datanodesIter + 1) % availableDatanodesIpQuantity;
@@ -112,9 +114,17 @@ const runHeartBeat = async () => {
 					datanodeIpToSync,
 					block.blockIdentifier
 				);
+				saveDatanode(block.fileIdentifier, datanodeIpToSync);
+				saveBlock(
+					block.fileIdentifier,
+					datanodeIpToSync,
+					block.blockIdentifier,
+					block.turn
+				);
 			})
 		));
 		saveDatanodesIter(datanodesIter);
+		logFilesMetadata();
 	} catch (error) {
 		console.error("Error in runHeartBeat", error);
 	}

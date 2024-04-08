@@ -1,5 +1,5 @@
 let datanodesIter = 0;
-const datanodesIP = [1, 2, 3, 4];
+const datanodesIP = [];
 // fileIdentifier -> datanode -> [{ blockIdentifier  | numero de turno}, ....]
 /*
 { 
@@ -175,6 +175,8 @@ const getBlocksWithDatanodeIp = (blocksFromFailedDatanodes) => {
               blocksWithDatanodeIp.push({
                 blockIdentifier: blocksFromFailedDatanode.blocksIdentifier,
                 datanodeIP: datanodeIP,
+								fileIdentifier: fileIdentifier,
+								turn: blockInfo.turn,
               });
             }
           }

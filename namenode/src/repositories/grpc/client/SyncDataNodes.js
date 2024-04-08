@@ -28,12 +28,10 @@ const HearBeat = async (dataNodeIp) => {
 				}
 			});
 		});
-
-		console.log("Respuesta de HeartBeat:", response);
 		return response;
 	} catch (error) {
 		// Manejar errores aquí
-		console.error("Error en HeartBeat:", error);
+		console.error("Error en HeartBeat:", error.message);
 		throw error; // Lanza el error para que sea manejado por código externo si es necesario
 	}
 };
