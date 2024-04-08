@@ -14,7 +14,7 @@ async function getFiles(request, response) {
     const blocksData = await dataNodeService.readDataNode(blocksInfo);
     const formattedData = await formatData(blocksInfo, blocksData);
     const downloadedFilePath = await fileManipulation.joinFile(
-      `${FILE_SYSTEM_PATH}${blocksInfo.fileName || "downloadedFile.mp3"}`,
+      `${FILE_SYSTEM_PATH}${blocksInfo.fileName || "downloadedFile.txt"}`,
       formattedData.contentFile,
       formattedData.turns,
     );

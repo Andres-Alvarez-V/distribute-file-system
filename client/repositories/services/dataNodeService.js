@@ -25,7 +25,7 @@ async function writeDataNode(blocksInfo, blocks) {
 }
 
 async function write(dataNode, block, i) {
-  const dataNodeAddress = "localhost:3003"; //dataNode.datanodeIP;
+  const dataNodeAddress = dataNode.datanodeIP;
   let blockData = {};
   blockData[dataNode.blocks[i].blockIdentifier] = block;
   const response = await blocksTransferClient.saveBlock(dataNodeAddress, {
@@ -53,7 +53,7 @@ async function readDataNode(blocksInfo) {
 }
 
 async function read(dataNode, blockIdentifier) {
-  const dataNodeAddress = "localhost:3003"; //dataNode.datanodeIP;
+  const dataNodeAddress = dataNode.datanodeIP;
   const response = await blocksTransferClient.getBlock(dataNodeAddress, {
     blockIdentifier,
   });
