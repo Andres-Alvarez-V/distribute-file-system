@@ -64,8 +64,6 @@ const SyncNodeBlock = async (dataNodeIp, dataNodeIpToSync, fileIdentifier) => {
 		// Obtener el código de estado del error
 		const statusCode = error.code;
 		console.log("Código de estado:", statusCode);
-		// y así sucesivamente para otros códigos de estado
-		throw error; // Lanza el error para que sea manejado por código externo si es necesario
 	}
 }
 
