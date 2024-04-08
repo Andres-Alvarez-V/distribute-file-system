@@ -1,5 +1,5 @@
 let datanodesIter = 0;
-const datanodesIP = [];
+const datanodesIP = [1,2,3,4];
 // fileIdentifier -> datanode -> [{ blockIdentifier  | numero de turno}, ....]
 /*
 { 
@@ -8,14 +8,14 @@ const datanodesIP = [];
     fileName: 'zz.txt',
     datanodes: [
       {
-        datanodesIP: 'XXX.XXX.XXX.XXX',
+        datanodeIP: 'XXX.XXX.XXX.XXX',
         blocks: [
           { blockIdentifier: 'zz-1', turn: 1 },
           { blockIdentifier: 'zz-2', turn: 2 }
         ]
       },
       {
-        datanodesIP: 'XXX.XXX.XXX.XXX',
+        datanodeIP: 'XXX.XXX.XXX.XXX',
         blocks: [
           { blockIdentifier: 'zz-1', turn: 3 },
         ]
@@ -95,6 +95,10 @@ function getFileMetadata(fileIdentifier) {
   return jsonData;
 }
 
+const getAllFilesMetadata = () => {
+  return fileMetadata;
+}
+
 
 
 module.exports = {
@@ -106,5 +110,6 @@ module.exports = {
   saveDatanodesIter,
   getFileMetadata,
   saveFileName,
-  addDatanodeIp
+  addDatanodeIp,
+  getAllFilesMetadata
 }

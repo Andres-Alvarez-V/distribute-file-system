@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid')
-const { MAX_SIZE_MB_FOR_SPLIT } = require("../utils/constants");
+const { MAX_SIZE_MB_FOR_SPLIT, MAX_NODES_TO_REPLICATE } = require("../utils/constants");
 const {
 	saveFileIdentifier,
 	saveDatanode,
@@ -9,7 +9,8 @@ const {
 	saveDatanodesIter,
   getFileMetadata: getFileMetadataRepository,
 	saveFileName,
-	addDatanodeIp
+	addDatanodeIp,
+	getAllFilesMetadata
 } = require("../repositories/db");
 const { HearBeat } = require('../repositories/grpc/client/SyncDataNodes');
 
@@ -42,9 +43,11 @@ const createAndSaveFileMapper = (fileSize, fileName) => {
 	const datanodesIter = getDatanodesIter();
 
 	for (let i = 0; i < datanodesNeeded; i += 1) {
-		const j = (datanodesIter + i) % availableDatanodesIpQuantity;
-		saveDatanodeInFileMetadata(fileIdentifier, availableDatanodesIp[j]);
-		createAndSaveFileBlock(fileIdentifier, availableDatanodesIp[j], i);
+		for (let j=0; j<MAX_NODES_TO_REPLICATE; j+=1){
+			const k = (i*MAX_NODES_TO_REPLICATE + j) % availableDatanodesIpQuantity;
+			saveDatanodeInFileMetadata(fileIdentifier, availableDatanodesIp[k]);
+			createAndSaveFileBlock(fileIdentifier, availableDatanodesIp[k], i);
+		}
 	}
 
 	const newDatanodesIter =
@@ -58,8 +61,6 @@ const getFileMetadata = (fileIdentifier) => {
   return getFileMetadataRepository(fileIdentifier);
 }
 
-
-
 const runHeartBeat = async () => {
 	try {
 		const datanodesIp = getDatanodesIp();
@@ -70,12 +71,16 @@ const runHeartBeat = async () => {
 				const response = await HearBeat(datanodeIp);
 				console.log("Response from HeartBeat:", response);
 			} catch (error) {
-				console.error(`Error running HeartBeat ${datanodeIp}.`);
 				failedDatanodes.push(datanodeIp);
 			}
 		})));
 		
 		console.log(`Failed Datanodes ${failedDatanodes}`);
+
+		const allFiles = getAllFilesMetadata();
+
+
+
 	} catch (error) {
 		console.error("Error in runHeartBeat", error);
 	}
