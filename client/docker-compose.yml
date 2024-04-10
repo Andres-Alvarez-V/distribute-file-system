@@ -9,12 +9,4 @@ services:
       - "3002:3002"
     environment:
       - PORT=3002
-      - NAME_NODE_URL=http://172.20.0.6:5000
-    networks:
-      mynet:
-        ipv4_address: 172.20.0.7
-
-networks:
-  mynet:
-    external:
-      name: mynet
+      - NAME_NODE_URL=http://34.233.186.39:5000
