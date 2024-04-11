@@ -82,6 +82,7 @@ function getFileMetadata(fileIdentifier) {
 
 	const jsonData = {
 		id: fileIdentifier,
+		fileName: fileInfo.fileName,
 		datanodes: [],
 	};
 
