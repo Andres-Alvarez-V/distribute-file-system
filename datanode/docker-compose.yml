@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   datanode1:
     container_name: datanode1
@@ -9,7 +9,8 @@ services:
       - "3000:3000"
     environment:
       - NAME_NODE_IP=34.233.186.39:5000
-      - DATANODE_ADDRESS=172.20.0.2:3000
+      - DATANODE_INTERNAL_IP=172.20.0.2:3000
+      - DATANODE_EXTERNAL_IP=44.221.239.169:3000
     networks:
       mynet:
         ipv4_address: 172.20.0.2
@@ -23,7 +24,8 @@ services:
       - "3001:3001"
     environment:
       - NAME_NODE_IP=34.233.186.39:5000
-      - DATANODE_ADDRESS=172.20.0.3:3001
+      - DATANODE_INTERNAL_IP=172.20.0.3:3001
+      - DATANODE_EXTERNAL_IP=44.221.239.169:3001
     networks:
       mynet:
         ipv4_address: 172.20.0.3
@@ -33,10 +35,11 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3003:3003"
+      - "3002:3002"
     environment:
       - NAME_NODE_IP=34.233.186.39:5000
-      - DATANODE_ADDRESS=172.20.0.4:3003
+      - DATANODE_INTERNAL_IP=172.20.0.4:3002
+      - DATANODE_EXTERNAL_IP=44.221.239.169:3002
     networks:
       mynet:
         ipv4_address: 172.20.0.4
@@ -46,10 +49,11 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3004:3004"
+      - "3003:3003"
     environment:
       - NAME_NODE_IP=34.233.186.39:5000
-      - DATANODE_ADDRESS=172.20.0.5:3004
+      - DATANODE_INTERNAL_IP=172.20.0.5:3003
+      - DATANODE_EXTERNAL_IP=44.221.239.169:3003
     networks:
       mynet:
         ipv4_address: 172.20.0.5

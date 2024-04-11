@@ -1,5 +1,7 @@
-const BLOCKS_TRANSFER_PROTO_PATH = __dirname + "/core/proto/BlocksTransfer.proto";
-const SYNC_DATA_NODES_PROTO_PATH = __dirname + "/core/proto/SyncDataNodes.proto";
+const BLOCKS_TRANSFER_PROTO_PATH =
+  __dirname + "/core/proto/BlocksTransfer.proto";
+const SYNC_DATA_NODES_PROTO_PATH =
+  __dirname + "/core/proto/SyncDataNodes.proto";
 
 process.loadEnvFile();
 
@@ -10,21 +12,31 @@ const { login } = require("./controllers/loginController");
 const { syncNodeBlock } = require("./controllers/syncDataNodes");
 process.loadEnvFile();
 
-const blockTransferPackageDefinition = protoLoader.loadSync(BLOCKS_TRANSFER_PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  arrays: true,
-});
-const syncDataNodesPackageDefinition = protoLoader.loadSync(SYNC_DATA_NODES_PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  arrays: true,
-});
+const blockTransferPackageDefinition = protoLoader.loadSync(
+  BLOCKS_TRANSFER_PROTO_PATH,
+  {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    arrays: true,
+  },
+);
+const syncDataNodesPackageDefinition = protoLoader.loadSync(
+  SYNC_DATA_NODES_PROTO_PATH,
+  {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    arrays: true,
+  },
+);
 
-const BlocksTransfer = grpc.loadPackageDefinition(blockTransferPackageDefinition);
-const SyncDataNodes = grpc.loadPackageDefinition(syncDataNodesPackageDefinition);
+const BlocksTransfer = grpc.loadPackageDefinition(
+  blockTransferPackageDefinition,
+);
+const SyncDataNodes = grpc.loadPackageDefinition(
+  syncDataNodesPackageDefinition,
+);
 const server = new grpc.Server();
 server.addService(SyncDataNodes.SyncDataNodesService.service, {
   heartBeat: (call, callback) => {
@@ -38,10 +50,10 @@ server.addService(SyncDataNodes.SyncDataNodesService.service, {
     if (!nodeToSyncIP || !blockIdentifier) {
       callback(new Error("Invalid parameters"));
       return;
-    } 
+    }
     await syncNodeBlock(nodeToSyncIP, blockIdentifier);
     callback();
-  }
+  },
 });
 
 server.addService(BlocksTransfer.BlocksTransferService.service, {
@@ -56,16 +68,17 @@ server.addService(BlocksTransfer.BlocksTransferService.service, {
 });
 
 server.bindAsync(
-  process.env.DATANODE_ADDRESS,
+  process.env.DATANODE_INTERNAL_IP,
   grpc.ServerCredentials.createInsecure(),
   async (err) => {
     if (err) {
       console.error(`DataNode Server failed to start: ${err}`);
       return;
     }
-    await login(process.env.DATANODE_ADDRESS)
+    await login(process.env.DATANODE_EXTERNAL_IP);
 
-    console.log(`DataNode Server running at ${process.env.DATANODE_ADDRESS}`);
-    
+    console.log(
+      `DataNode Server running at ${process.env.DATANODE_INTERNAL_IP}`,
+    );
   },
 );
